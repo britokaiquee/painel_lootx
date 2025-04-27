@@ -64,6 +64,11 @@ produtos_variacoes = {
         "30 DIAS": 386.90,
         "365 DIAS": 896.90
     },
+    "Fecurity Menu": {
+        "1 DIA": 18.90,
+        "7 DIAS": 54.90,
+        "30 DIAS": 96.90
+    },
     "SafestCheats - Valorant Menu": {
         "3 DIAS": 56.90,
         "7 DIAS": 106.90,
@@ -82,8 +87,8 @@ produtos_variacoes = {
 
 # Selecionar categoria e produto
 categoria = st.radio(
-    'Categoria', ['League of Legends', 'Valorant', 'Vanguard Bypass',
-                  'HWID Spoofer']
+    'Categoria', ['League of Legends', 'Valorant', 'Call of Duty',
+                  'Vanguard Bypass', 'HWID Spoofer']
 )
 
 match categoria:
@@ -97,6 +102,8 @@ match categoria:
             'Produto', ['StealthVGC Private - Valorant VIP Menu',
                         'SafestCheats - Valorant Menu',]
         )
+    case "Call of Duty":
+        produto = st.radio('Produto', ['Fecurity Menu'])
     case "Vanguard Bypass":
         produto = st.radio('Produto', ['StealthVGC Private - Vanguard Bypass'])
     case "HWID Spoofer":
@@ -129,10 +136,16 @@ with st.form("formulario_adicionar"):
     enviar = st.form_submit_button('Adicionar')
 
     if enviar:
-        nova_linha = {
-            'Categoria': categoria, 'Produto': produto, 'Tipo': tipo,
-            'Itens vendidos': itens_vendidos, 'Valor (R$)': valor
-        }
+        if tipo == 'Entrada':
+            nova_linha = {
+                'Categoria': categoria, 'Produto': produto, 'Tipo': tipo,
+                'Itens vendidos': itens_vendidos, 'Valor (R$)': valor
+            }
+        elif tipo == 'Saída':
+            nova_linha = {
+                'Categoria': categoria, 'Produto': produto, 'Tipo': tipo,
+                'Valor (R$)': valor
+            }
 
         dados = pd.concat(
             [dados, pd.DataFrame([nova_linha])], ignore_index=True)
@@ -157,7 +170,7 @@ lucro = entrada - saida
 
 st.metric("Total de Entradas", f"R$ {entrada:.2f}")
 st.metric("Total de Saídas", f"R$ {saida:.2f}")
-st.metric("Lucro Atual", f"R$ {lucro:.2f}")
+st.metric("Saldo", f"R$ {lucro:.2f}")
 
 
 # Gráfico
