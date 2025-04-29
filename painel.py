@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
+import time
 
 
 # Título do painel
@@ -44,7 +45,7 @@ produtos_variacoes = {
         "7 DIAS": 153.90,
         "30 DIAS": 516.70
     },
-    "CONTAS BR": {
+    "SMURFS/NFA (BR)": {
         "HANDLEVEL": 19.70,
         "NFA 100+": 8.59,
         "NFA 60+": 3.57
@@ -54,11 +55,11 @@ produtos_variacoes = {
         "7 DIAS": 76.90,
         "30 DIAS": 119.90
     },
-    "BLCG PRIVATE": {
+    "BLCG/NS CLUB": {
         "7 DIAS": 250.00,
         "30 DIAS": 700.00
     },
-    "StealthVGC Private - Valorant VIP Menu": {
+    "SVGC Skeet - Valorant VIP Menu": {
         "1 DIA": 34.90,
         "7 DIAS": 146.90,
         "30 DIAS": 386.90,
@@ -70,17 +71,20 @@ produtos_variacoes = {
         "30 DIAS": 96.90
     },
     "SafestCheats - Valorant Menu": {
-        "3 DIAS": 56.90,
-        "7 DIAS": 106.90,
-        "30 DIAS": 249.90
+        "3 DIAS": 65.00,
+        "7 DIAS": 150.00,
+        "30 DIAS": 350.00
     },
-    "StealthVGC Private - Vanguard Bypass": {
-        "7 DIAS": 29.90,
-        "30 DIAS": 79.90,
-        "LIFETIME": 249.90
+    "SVGC Skeet - Vanguard Bypass": {
+        "7 DIAS": 44.90,
+        "30 DIAS": 119.90,
+        "LIFETIME": 374.90
     },
     "The Nexus - Perm Woofer": {
         "30 DIAS": 86.90
+    },
+    "SafestCheats - Perm Spoofer": {
+        "One Time Unban": 96.40
     }
 }
 
@@ -95,19 +99,20 @@ match categoria:
     case "League of Legends":
         produto = st.radio(
             'Produto', ['ES SCRIPT', 'HANBOT SCRIPT', 'NV BYPASS', 'LS SCRIPT',
-                        'CONTAS BR', 'RTX SCRIPT', 'BLCG PRIVATE']
+                        'SMURFS/NFA (BR)', 'RTX SCRIPT', 'BLCG/NS CLUB']
         )
     case "Valorant":
         produto = st.radio(
-            'Produto', ['StealthVGC Private - Valorant VIP Menu',
+            'Produto', ['SVGC Skeet - Valorant VIP Menu',
                         'SafestCheats - Valorant Menu',]
         )
     case "Call of Duty":
         produto = st.radio('Produto', ['Fecurity Menu'])
     case "Vanguard Bypass":
-        produto = st.radio('Produto', ['StealthVGC Private - Vanguard Bypass'])
+        produto = st.radio('Produto', ['SVGC Skeet - Vanguard Bypass'])
     case "HWID Spoofer":
-        produto = st.radio('Produto', ['The Nexus - Perm Woofer'])
+        produto = st.radio('Produto', ['The Nexus - Perm Woofer',
+                                       'SafestCheats - Perm Spoofer'])
 
 
 # Selecionar tipo
@@ -131,9 +136,16 @@ elif tipo == 'Saída':
     valor = st.number_input('Valor (R$)', min_value=0.0, format="%.2f")
 
 
+# Inicializar estados
+if "fase" not in st.session_state:
+    st.session_state["fase"] = "normal"  # normal, adicionando, sucesso
+
+# Define se o botão está habilitado ou não
+botao_habilitado = st.session_state["fase"] == "normal"
+
 # Formulário para adicionar dados
 with st.form("formulario_adicionar"):
-    enviar = st.form_submit_button('Adicionar')
+    enviar = st.form_submit_button('Adicionar', disabled=not botao_habilitado)
 
     if enviar:
         if tipo == 'Entrada':
@@ -150,13 +162,20 @@ with st.form("formulario_adicionar"):
         dados = pd.concat(
             [dados, pd.DataFrame([nova_linha])], ignore_index=True)
 
-        # Salvar os dados no CSV
         dados.to_csv(caminho_arquivo, index=False)
 
-        st.success('Movimentação adicionada!')
+        st.session_state["fase"] = "sucesso"
+        st.rerun()
+
+# Mostrar mensagem
+if st.session_state["fase"] == "sucesso":
+    st.success('Movimentação adicionada com sucesso!')
+    time.sleep(0.5)  # Esperar meio segundo
+    st.session_state["fase"] = "normal"
+    st.rerun()
 
 
-# Exibir tabela
+# Exibir a tabela
 st.subheader("Movimentações")
 dados_com_indice = dados.copy()
 dados_com_indice.index = dados_com_indice.index + 1
